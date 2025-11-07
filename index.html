@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTM Agents & Scopes - Complete Framework</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="agentsdata.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>GTM Agents & Scopes</h1>
+            <p>Complete Go-to-Market Automation Framework</p>
+        </div>
+
+        <div class="tools-section">
+            <h2>🛠️ Tool Ecosystem</h2>
+            <div class="tools-grid" id="toolsGrid"></div>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-wrapper" id="tabsContainer"></div>
+            <div class="stats-inline">
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="legend-dot released"></span>
+                        <span>Released</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot roadmap"></span>
+                        <span>Roadmap</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Agents:</span>
+                    <span class="stat-value" id="agentCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Tasks:</span>
+                    <span class="stat-value" id="taskCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="phasesContainer"></div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const toolLogos = {
+            "Gem (GTM assistant)": "logos/gemlogo.png",
+            "Forge": "logos/forge logo.png",
+            "Commonroom": "logos/commonroomlogo.webp",
+            "Outreach": "logos/outreach.png",
+            "GTM Brain": "🧠",
+            "Peel": "logos/peel.jpeg",
+            "Aidvize": "logos/aidvize.png",
+            "Staircase": "logos/staircase.webp",
+            "Clay": "logos/clay.jpeg",
+            "Rattle": "logos/rattle.png",
+            "Qualified": "logos/qualified.png",
+            "Glean": "logos/glean.png",
+            "Copy.ai": "logos/copyai.jpeg",
+            "Gamma": "logos/gamma.png",
+            "n8n": "logos/n8n.png"
+        };
+
+        const agentLogos = {
+            "Pre-discovery agent": ["Clay"],
+            "Post-discovery agent": ["Gem (GTM assistant)", "Gamma"],
+            "Qualification agent": ["Rattle"],
+            "Landing page generator": ["Gamma"],
+            "Deck generator": ["Gem (GTM assistant)"],
+            "Forge (deal prep agent)": ["Forge"],
+            "Dealroom generator": [],
+            "Pre-demo agent": ["Gem (GTM assistant)", "Forge"],
+            "Post-demo agent": ["Gem (GTM assistant)"],
+            "Deal forecaster": ["Rattle"],
+            "Partnership detector": ["Rattle"],
+            "Risk alert": ["Rattle"],
+            "Manager rundown": ["Rattle"],
+            "RFI/RFP agent": [],
+            "Scoping agent": ["Gem (GTM assistant)"],
+            "Quote assistant": [],
+            "Legal assistant": [],
+            "Case study / logo curator": ["Gem (GTM assistant)"],
+            "🧠 GTM Brain ingestion": ["🧠"]
+        };
+
+        const data = agentsData;
+        let currentPhase = 1;
+        const expandStates = {};
+        const tooltip = document.getElementById('tooltip');
+
+        // Helper function to determine agent status
+        function getAgentStatus(agent) {
+            if (agent.tasks.length === 0) return 'roadmap';
+            
+            const hasReleasedTask = agent.tasks.some(task => {
+                if (typeof task === 'string') return false;
+                return task.status === 'released';
+            });
+            
+            return hasReleasedTask ? 'released' : 'roadmap';
+        }
+
+        // Calculate stats
+        let totalAgents = 0;
+        let totalTasks = 0;
+        
+        data.phases.forEach(phase => {
+            totalAgents += phase.agents.length;
+            phase.agents.forEach(agent => {
+                totalTasks += agent.tasks.length;
+            });
+        });
+
+        document.getElementById('agentCount').textContent = totalAgents;
+        document.getElementById('taskCount').textContent = totalTasks;
+
+        // Render tools
+        const toolsGrid = document.getElementById('toolsGrid');
+        data.tools.forEach(tool => {
+            const badge = document.createElement('div');
+            badge.className = 'tool-badge';
+            
+            const logo = toolLogos[tool];
+            if (logo) {
+                if (logo === "🧠") {
+                    const emoji = document.createElement('span');
+                    emoji.textContent = logo;
+                    badge.appendChild(emoji);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = logo;
+                    img.className = 'tool-logo';
+                    img.alt = tool;
+                    badge.appendChild(img);
+                }
+            }
+            
+            const text = document.createElement('span');
+            text.textContent = tool;
+            badge.appendChild(text);
+            
+            toolsGrid.appendChild(badge);
+        });
+
+        // Render tabs
+        const tabsContainer = document.getElementById('tabsContainer');
+        data.phases.forEach((phase, index) => {
+            const tab = document.createElement('button');
+            tab.className = 'tab' + (index === 1 ? ' active' : '');
+            tab.textContent = phase.name;
+            tab.onclick = () => switchPhase(index);
+            tabsContainer.appendChild(tab);
+        });
+
+        // Render phases
+        const phasesContainer = document.getElementById('phasesContainer');
+        data.phases.forEach((phase, phaseIndex) => {
+            const phaseDiv = document.createElement('div');
+            phaseDiv.className = 'phase-content' + (phaseIndex === 1 ? ' active' : '');
+            phaseDiv.id = `phase-${phaseIndex}`;
+
+            const phaseHeader = document.createElement('div');
+            phaseHeader.className = 'phase-header';
+            phaseHeader.innerHTML = `
+                <div class="phase-title">${phase.name}</div>
+                <button class="expand-all-btn" onclick="toggleAllInPhase(${phaseIndex})">Expand All</button>
+            `;
+            phaseDiv.appendChild(phaseHeader);
+
+            const agentsGrid = document.createElement('div');
+            agentsGrid.className = 'agents-grid';
+
+            phase.agents.forEach((agent, agentIndex) => {
+                const agentId = `${phaseIndex}-${agentIndex}`;
+                expandStates[agentId] = false;
+
+                const agentStatus = getAgentStatus(agent);
+
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+
+                const header = document.createElement('div');
+                header.className = 'agent-header';
+                header.onclick = () => toggleAgent(phaseIndex, agentIndex);
+
+                const nameContainer = document.createElement('div');
+                nameContainer.className = 'agent-name-container';
+
+                // Add status indicator
+                const statusDot = document.createElement('span');
+                statusDot.className = `agent-status-dot ${agentStatus}`;
+                nameContainer.appendChild(statusDot);
+
+                const agentNameDiv = document.createElement('div');
+                agentNameDiv.className = 'agent-name';
+                agentNameDiv.textContent = agent.name;
+                nameContainer.appendChild(agentNameDiv);
+
+                // Add logos if they exist
+                const logos = agentLogos[agent.name];
+                if (logos && logos.length > 0) {
+                    const logosDiv = document.createElement('div');
+                    logosDiv.className = 'agent-logos';
+                    
+                    logos.forEach(logoName => {
+                        const logoSrc = toolLogos[logoName];
+                        if (logoSrc) {
+                            if (logoSrc === "🧠") {
+                                const emoji = document.createElement('span');
+                                emoji.textContent = logoSrc;
+                                emoji.style.fontSize = '20px';
+                                logosDiv.appendChild(emoji);
+                            } else {
+                                const img = document.createElement('img');
+                                img.src = logoSrc;
+                                img.className = 'agent-logo';
+                                img.alt = logoName;
+                                logosDiv.appendChild(img);
+                            }
+                        }
+                    });
+                    
+                    nameContainer.appendChild(logosDiv);
+                }
+
+                header.appendChild(nameContainer);
+
+                const arrow = document.createElement('div');
+                arrow.className = 'arrow';
+                arrow.id = `arrow-${agentId}`;
+                arrow.textContent = '›';
+                header.appendChild(arrow);
+
+                const tasksContent = document.createElement('div');
+                tasksContent.className = 'tasks-content';
+                tasksContent.id = `tasks-${agentId}`;
+
+                if (agent.tasks.length > 0) {
+                    const tasksList = document.createElement('div');
+                    tasksList.className = 'tasks-list';
+
+                    agent.tasks.forEach(task => {
+                        const taskItem = document.createElement('div');
+                        taskItem.className = 'task-item';
+                        
+                        if (typeof task === 'string') {
+                            taskItem.classList.add('roadmap');
+                            const taskNameSpan = document.createElement('span');
+                            taskNameSpan.className = 'task-name';
+                            taskNameSpan.textContent = task;
+                            taskItem.appendChild(taskNameSpan);
+                        } else {
+                            taskItem.classList.add(task.status || 'roadmap');
+                            const taskNameSpan = document.createElement('span');
+                            taskNameSpan.className = 'task-name';
+                            taskNameSpan.textContent = task.name;
+                            taskItem.appendChild(taskNameSpan);
+                            
+                            if (task.description) {
+                                const infoIcon = document.createElement('span');
+                                infoIcon.className = 'info-icon';
+                                infoIcon.innerHTML = 'ⓘ';
+                                
+                                infoIcon.addEventListener('mouseenter', (e) => showTooltip(e, task.description));
+                                infoIcon.addEventListener('mouseleave', hideTooltip);
+                                
+                                taskItem.appendChild(infoIcon);
+                            }
+                        }
+                        
+                        tasksList.appendChild(taskItem);
+                    });
+
+                    tasksContent.appendChild(tasksList);
+                } else {
+                    const noTasks = document.createElement('div');
+                    noTasks.className = 'no-tasks';
+                    noTasks.textContent = 'No tasks defined';
+                    tasksContent.appendChild(noTasks);
+                }
+
+                card.appendChild(header);
+                card.appendChild(tasksContent);
+                agentsGrid.appendChild(card);
+            });
+
+            phaseDiv.appendChild(agentsGrid);
+            phasesContainer.appendChild(phaseDiv);
+        });
+
+        function showTooltip(event, description) {
+            const rect = event.target.getBoundingClientRect();
+            tooltip.textContent = description;
+            
+            let left = rect.right + 8;
+            let top = rect.top;
+            
+            setTimeout(() => {
+                const tooltipRect = tooltip.getBoundingClientRect();
+                
+                if (left + tooltipRect.width > window.innerWidth - 20) {
+                    left = rect.left - tooltipRect.width - 8;
+                }
+                if (left < 20) {
+                    left = 20;
+                }
+                
+                if (top + tooltipRect.height > window.innerHeight - 20) {
+                    top = window.innerHeight - tooltipRect.height - 20;
+                }
+                if (top < 20) {
+                    top = 20;
+                }
+                
+                tooltip.style.left = left + 'px';
+                tooltip.style.top = top + 'px';
+            }, 0);
+            
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            tooltip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            tooltip.classList.remove('show');
+        }
+
+        function switchPhase(index) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+
+            const phases = document.querySelectorAll('.phase-content');
+            phases.forEach((phase, i) => {
+                phase.classList.toggle('active', i === index);
+            });
+
+            currentPhase = index;
+        }
+
+        function toggleAgent(phaseIndex, agentIndex) {
+            const agentId = `${phaseIndex}-${agentIndex}`;
+            const tasksContent = document.getElementById(`tasks-${agentId}`);
+            const arrow = document.getElementById(`arrow-${agentId}`);
+
+            expandStates[agentId] = !expandStates[agentId];
+
+            if (expandStates[agentId]) {
+                tasksContent.classList.add('expanded');
+                arrow.classList.add('expanded');
+            } else {
+                tasksContent.classList.remove('expanded');
+                arrow.classList.remove('expanded');
+            }
+        }
+
+        function toggleAllInPhase(phaseIndex) {
+            const phase = data.phases[phaseIndex];
+            const button = event.target;
+            
+            let anyCollapsed = false;
+            phase.agents.forEach((agent, agentIndex) => {
+                const agentId = `${phaseIndex}-${agentIndex}`;
+                if (!expandStates[agentId]) {
+                    anyCollapsed = true;
+                }
+            });
+
+            phase.agents.forEach((agent, agentIndex) => {
+                const agentId = `${phaseIndex}-${agentIndex}`;
+                const tasksContent = document.getElementById(`tasks-${agentId}`);
+                const arrow = document.getElementById(`arrow-${agentId}`);
+
+                if (!tasksContent || !arrow) return;
+
+                expandStates[agentId] = anyCollapsed;
+
+                if (anyCollapsed) {
+                    tasksContent.classList.add('expanded');
+                    arrow.classList.add('expanded');
+                } else {
+                    tasksContent.classList.remove('expanded');
+                    arrow.classList.remove('expanded');
+                }
+            });
+
+            button.textContent = anyCollapsed ? 'Collapse All' : 'Expand All';
+        }
+    </script>
+</body>
+</html>
