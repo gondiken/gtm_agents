@@ -159,7 +159,7 @@ const agentsData = {
                             "name": "Landing page generator",
                             "description": "Generate a customer & marketer/merchandiser story-focused landing page, specific to the brand and their pain points",
                             "tools": ["Gem"],
-                            "status": "roadmap"
+                            "status": "released"
                         }
                     ]
                 },
@@ -187,7 +187,7 @@ const agentsData = {
                             "name": "Generate landing page",
                             "description": "Generate landing page for the opp demonstrating Bloomreach value",
                             "tools": ["Gem","Gamma"],
-                            "status": "roadmap"
+                            "status": "released"
                         }
                     ]
                 },
