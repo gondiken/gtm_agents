@@ -50,7 +50,7 @@
 
     <script>
         const toolLogos = {
-            "Gem (GTM assistant)": "logos/gemlogo.png",
+            "Gem": "logos/gemlogo.png",
             "Forge": "logos/forge logo.png",
             "Commonroom": "logos/commonroomlogo.webp",
             "Outreach": "logos/outreach.png",
@@ -67,27 +67,24 @@
             "n8n": "logos/n8n.png"
         };
 
-        const agentLogos = {
-            "Pre-discovery agent": ["Clay"],
-            "Post-discovery agent": ["Gem (GTM assistant)", "Gamma"],
-            "Qualification agent": ["Rattle"],
-            "Landing page generator": ["Gamma"],
-            "Deck generator": ["Gem (GTM assistant)"],
-            "Forge (deal prep agent)": ["Forge"],
-            "Dealroom generator": [],
-            "Pre-demo agent": ["Gem (GTM assistant)", "Forge"],
-            "Post-demo agent": ["Gem (GTM assistant)"],
-            "Deal forecaster": ["Rattle"],
-            "Partnership detector": ["Rattle"],
-            "Risk alert": ["Rattle"],
-            "Manager rundown": ["Rattle"],
-            "RFI/RFP agent": [],
-            "Scoping agent": ["Gem (GTM assistant)"],
-            "Quote assistant": [],
-            "Legal assistant": [],
-            "Case study / logo curator": ["Gem (GTM assistant)"],
-            "🧠 GTM Brain ingestion": ["🧠"]
-        };
+        // Function to auto-derive agent logos from their tasks' tools
+        function getAgentTools(agent) {
+            const toolsSet = new Set();
+
+            if (agent.tasks && agent.tasks.length > 0) {
+                agent.tasks.forEach(task => {
+                    if (typeof task === 'object' && task.tools) {
+                        task.tools.forEach(tool => {
+                            if (tool) {
+                                toolsSet.add(tool);
+                            }
+                        });
+                    }
+                });
+            }
+
+            return Array.from(toolsSet);
+        }
 
         const data = agentsData;
         let currentPhase = 1;
@@ -202,14 +199,14 @@
                 agentNameDiv.textContent = agent.name;
                 nameContainer.appendChild(agentNameDiv);
 
-                // Add logos if they exist
-                const logos = agentLogos[agent.name];
-                if (logos && logos.length > 0) {
+                // Auto-derive and add logos from agent's tasks
+                const agentTools = getAgentTools(agent);
+                if (agentTools.length > 0) {
                     const logosDiv = document.createElement('div');
                     logosDiv.className = 'agent-logos';
-                    
-                    logos.forEach(logoName => {
-                        const logoSrc = toolLogos[logoName];
+
+                    agentTools.forEach(toolName => {
+                        const logoSrc = toolLogos[toolName];
                         if (logoSrc) {
                             if (logoSrc === "🧠") {
                                 const emoji = document.createElement('span');
@@ -220,12 +217,12 @@
                                 const img = document.createElement('img');
                                 img.src = logoSrc;
                                 img.className = 'agent-logo';
-                                img.alt = logoName;
+                                img.alt = toolName;
                                 logosDiv.appendChild(img);
                             }
                         }
                     });
-                    
+
                     nameContainer.appendChild(logosDiv);
                 }
 
@@ -248,7 +245,7 @@
                     agent.tasks.forEach(task => {
                         const taskItem = document.createElement('div');
                         taskItem.className = 'task-item';
-                        
+
                         if (typeof task === 'string') {
                             taskItem.classList.add('roadmap');
                             const taskNameSpan = document.createElement('span');
@@ -257,23 +254,58 @@
                             taskItem.appendChild(taskNameSpan);
                         } else {
                             taskItem.classList.add(task.status || 'roadmap');
+
+                            const taskMainContent = document.createElement('div');
+                            taskMainContent.className = 'task-main-content';
+
                             const taskNameSpan = document.createElement('span');
                             taskNameSpan.className = 'task-name';
                             taskNameSpan.textContent = task.name;
-                            taskItem.appendChild(taskNameSpan);
-                            
+                            taskMainContent.appendChild(taskNameSpan);
+
+                            // Add tool logos for this task
+                            if (task.tools && task.tools.length > 0) {
+                                const taskToolsDiv = document.createElement('div');
+                                taskToolsDiv.className = 'task-tools';
+
+                                task.tools.forEach(toolName => {
+                                    if (toolName) {
+                                        const logoSrc = toolLogos[toolName];
+                                        if (logoSrc) {
+                                            if (logoSrc === "🧠") {
+                                                const emoji = document.createElement('span');
+                                                emoji.textContent = logoSrc;
+                                                emoji.style.fontSize = '16px';
+                                                taskToolsDiv.appendChild(emoji);
+                                            } else {
+                                                const img = document.createElement('img');
+                                                img.src = logoSrc;
+                                                img.className = 'task-tool-logo';
+                                                img.alt = toolName;
+                                                img.title = toolName;
+                                                taskToolsDiv.appendChild(img);
+                                            }
+                                        }
+                                    }
+                                });
+
+                                taskMainContent.appendChild(taskToolsDiv);
+                            }
+
+                            taskItem.appendChild(taskMainContent);
+
                             if (task.description) {
                                 const infoIcon = document.createElement('span');
                                 infoIcon.className = 'info-icon';
                                 infoIcon.innerHTML = 'ⓘ';
-                                
+
                                 infoIcon.addEventListener('mouseenter', (e) => showTooltip(e, task.description));
                                 infoIcon.addEventListener('mouseleave', hideTooltip);
-                                
+
                                 taskItem.appendChild(infoIcon);
                             }
                         }
-                        
+
                         tasksList.appendChild(taskItem);
                     });
 

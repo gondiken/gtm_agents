@@ -1,6 +1,6 @@
 const agentsData = {
     "tools": [
-        "Gem (GTM assistant)",
+        "Gem",
         "Forge",
         "Commonroom",
         "Outreach",
