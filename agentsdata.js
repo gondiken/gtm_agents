@@ -568,7 +568,7 @@ const agentsData = {
             ]
         },
         {
-            "name": "Renewal",
+            "name": "Account Management",
             "agents": [
                 {
                     "name": "360 view",
@@ -581,14 +581,10 @@ const agentsData = {
             ]
         },
         {
-            "name": "Upsell",
-            "agents": []
-        },
-        {
             "name": "Customer Success",
             "agents": [
                 {
-                    "name": "AE to SC handover",
+                    "name": "AE to AM/CSM handover",
                     "tasks": []
                 }
             ]
