@@ -14,11 +14,12 @@ const agentsData = {
         "Glean",
         "Copy.ai",
         "Gamma",
-        "n8n"
+        "n8n",
+        "Userled"
     ],
     "phases": [
         {
-            "name": "Pre-S0",
+            "name": "Marketing",
             "agents": [
                 {
                     "name": "Website - Meeting agent",
@@ -27,6 +28,70 @@ const agentsData = {
                 {
                     "name": "Inbound - AI SDR",
                     "tasks": []
+                },
+                {
+                    "name": "1:1 ABM Agent",
+                    "tasks": [
+                        {
+                            "name": "Account Research",
+                            "description": "",
+                            "tools": ["Copy.ai"],
+                            "status": "released"
+                        },
+                        {
+                            "name": "Landing page copy",
+                            "description": "",
+                            "tools": ["Copy.ai"],
+                            "status": "released"
+                        },
+                        {
+                            "name": "Ad creatives and copy",
+                            "description": "",
+                            "tools": ["Copy.ai"],
+                            "status": "released"
+                        },
+                        {
+                            "name": "Email copy generation for outreach",
+                            "description": "",
+                            "tools": ["Copy.ai"],
+                            "status": "released"
+                        },
+                        {
+                            "name": "Deal expert",
+                            "description": "",
+                            "tools": ["Gem"],
+                            "status": "released"
+                        },
+                        {
+                            "name": "Landing page generation",
+                            "description": "",
+                            "tools": ["Userled"],
+                            "status": "released"
+                        },
+                        {
+                            "name": "LinkedIn campaign & ad creation",
+                            "description": "",
+                            "tools": ["Userled"],
+                            "status": "released"
+                        }
+                    ]
+                },
+                {
+                    "name": "Post-webinar Agent",
+                    "tasks": [
+                        {
+                            "name": "Summarize webinar takeaways and next steps from transcripts",
+                            "description": "",
+                            "tools": ["Copy.ai"],
+                            "status": "released"
+                        },
+                        {
+                            "name": "Append to contact records in Hubspot for AI follow up",
+                            "description": "",
+                            "tools": ["Copy.ai"],
+                            "status": "released"
+                        }
+                    ]
                 },
                 {
                     "name": "Organic Lead Agent",
