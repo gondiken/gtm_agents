@@ -51,16 +51,16 @@ const agentsData = {
                             "status": "released"
                         },
                         {
-                            "name": "Email copy generation for outreach",
-                            "description": "",
+                            "name": "Email copy",
+                            "description": "Email copy generation for outreach",
                             "tools": ["Copy.ai"],
                             "status": "released"
                         },
                         {
                             "name": "Deal expert",
-                            "description": "",
+                            "description": "Get opp-specific details, pain points, metrics",
                             "tools": ["Gem"],
-                            "status": "released"
+                            "status": "roadmap"
                         },
                         {
                             "name": "Landing page generation",
@@ -80,14 +80,14 @@ const agentsData = {
                     "name": "Post-webinar Agent",
                     "tasks": [
                         {
-                            "name": "Summarize webinar takeaways and next steps from transcripts",
-                            "description": "",
+                            "name": "Summarizer",
+                            "description": "Summarize webinar takeaways and next steps from transcripts",
                             "tools": ["Copy.ai"],
                             "status": "released"
                         },
                         {
-                            "name": "Append to contact records in Hubspot for AI follow up",
-                            "description": "",
+                            "name": "Contact enrichment",
+                            "description": "Append to contact records in Hubspot for AI follow up",
                             "tools": ["Copy.ai"],
                             "status": "released"
                         }
